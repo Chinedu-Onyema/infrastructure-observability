@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
 app.get('/healthy', (req, res) => {
     res.status(200).json({
-        name: "👀 - Obserability 🔥- Abhishek Veeramalla",
+        name: "👀 - Obserability 🔥- Chinedu Onyema",
         status: "healthy"
     })
 });
