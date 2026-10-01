@@ -18,7 +18,7 @@ spec:
       containers:
       - image: node-app-service-a:latest
         name: service-a
-        imagePullPolicy: never
+        imagePullPolicy: Never
         ports:
         - containerPort: 3001
         env:
