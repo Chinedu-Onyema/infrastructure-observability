@@ -1,0 +1,22 @@
+env:
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: elasticsearch-eck-elasticsearch-es-elastic-user
+        key: elastic
+
+config:
+  outputs: |
+    [OUTPUT]
+        Name                es
+        Match               kube.*
+        Host                elasticsearch-eck-elasticsearch-es-http
+        Port                9200
+        HTTP_User           elastic
+        HTTP_Passwd         MsGfmy8sybVaDyT0nnV6S3Br
+        tls                 On
+        tls.verify          Off
+        Suppress_Type_Name  On
+        Logstash_Format     On
+        Logstash_Prefix     kube   
+        Replace_Dots        On
