@@ -1,7 +1,7 @@
 'use strict';
 
-const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node'); // Updated import
-const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
+const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http');       // replaces JaegerExporter
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 const { Resource } = require('@opentelemetry/resources');
 const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
@@ -9,18 +9,23 @@ const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-base');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
 
+// Service name comes from the env var, falling back to service-b for this app
+const SERVICE_NAME = process.env.OTEL_SERVICE_NAME || 'service-b';
+
+// Jaeger v2 receives OTLP/HTTP on port 4318 (Service "jaeger" in namespace "tracing")
+const OTLP_ENDPOINT =
+  process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://jaeger.tracing.svc.cluster.local:4318';
+
 // Initialize the provider
 const provider = new NodeTracerProvider({
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'service-b',
+    [SemanticResourceAttributes.SERVICE_NAME]: SERVICE_NAME,
   }),
 });
 
-const JAEGER_ENDPOINT =  process.env.OTEL_EXPORTER_JAEGER_ENDPOINT
-
-// Setup the exporter
-const exporter = new JaegerExporter({
-  endpoint: JAEGER_ENDPOINT, // Replace with the appropriate Jaeger collector endpoint
+// Setup the exporter (when url is set explicitly, the /v1/traces path is required)
+const exporter = new OTLPTraceExporter({
+  url: `${OTLP_ENDPOINT.replace(/\/$/, '')}/v1/traces`,
 });
 
 // Add the exporter to the provider
@@ -36,8 +41,8 @@ registerInstrumentations({
         span.setAttribute('custom-attribute', 'custom-value');
       },
     }),
-    new ExpressInstrumentation(), // Add this for Express.js instrumentation
+    new ExpressInstrumentation(),
   ],
 });
 
-console.log('Tracing initialized');
+console.log(`Tracing initialized for ${SERVICE_NAME}, exporting to ${OTLP_ENDPOINT}`);

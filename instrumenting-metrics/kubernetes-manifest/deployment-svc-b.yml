@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   labels:
     app: service-b-deployment
-    # run: service-b-deployment
   name: service-b-deployment
 spec:
   replicas: 1
@@ -16,11 +15,15 @@ spec:
         app: service-b-deployment
     spec:
       containers:
-      - image: node-app-service-b:latest
+      - image: node-app-service-b:1.0
         name: service-b
         imagePullPolicy: Never
         ports:
         - containerPort: 3002
         env:
-        - name: OTEL_EXPORTER_JAEGER_ENDPOINT
-          value: "http://jaeger-collector.tracing:14268/api/traces"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT                          # reference the OTLP exporter
+          value: "http://jaeger.tracing.svc.cluster.local:4318"      # use the new URL on port 4318 for jaeger v2
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: "http/protobuf"
+        - name: OTEL_SERVICE_NAME
+          value: "service-b"

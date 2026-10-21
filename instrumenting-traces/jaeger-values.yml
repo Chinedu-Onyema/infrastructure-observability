@@ -1,0 +1,48 @@
+storage:
+  type: elasticsearch                                              # if you want to use cassandra for storing traces
+                                                                   # then change it to that
+
+  elasticsearch:
+    host: elasticsearch-eck-elasticsearch-es-http.logging.svc      # Replace with your Elasticsearch service DNS
+                                                                   # run 'kubectl get svc -n logging' and copy the name
+                                                                   # es-http ad add .logging.svc to get the Elastic service DNS
+                                                                   # this name changes by cluster type (EKS, Openshift, minikube)
+
+    port: 9200
+    scheme: https
+    user: elastic                                              # Replace with the actual username if necessary
+    password: fcYxd16sFtzLtEiRWHx56X1P                          # Replace with the actual password
+    tls:
+      enabled: true
+      ca: /tls/ca-cert.pem                                     # Path where the CA cert is mounted
+
+provisionDataStore:
+  cassandra: false                                             # this tells jaeger not to use it own 
+                                                               # cassandra database because we are using 
+                                                               # ECK Elasticsearch
+
+  elasticsearch: false                                         # this tells jaeger not to use it own 
+                                                               # elasticserach because we are using 
+                                                               # ECK Elasticsearch
+
+query:
+  cmdlineParams:
+    es.tls.enabled: "true"
+    es.tls.ca: "/tls/ca-cert.pem"
+  extraConfigmapMounts:
+    - name: jaeger-tls
+      mountPath: /tls
+      subPath: ""
+      configMap: jaeger-tls
+      readOnly: true
+
+collector:
+  cmdlineParams:
+    es.tls.enabled: "true"
+    es.tls.ca: "/tls/ca-cert.pem"
+  extraConfigmapMounts:
+    - name: jaeger-tls
+      mountPath: /tls
+      subPath: ""
+      configMap: jaeger-tls
+      readOnly: true

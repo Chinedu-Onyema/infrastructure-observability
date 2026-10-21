@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@opentelemetry/exporter-trace-otlp-http": "^0.300.0"
+  }
+}

@@ -1,0 +1,28 @@
+# A "nodeSet" is a group of Elasticsearch nodes (Pods) that share the same settings
+nodeSets:
+- name: default                    # name of this group of nodes
+  count: 1                         # run just 1 node (enough for testing, saves memory)
+
+  # Elasticsearch's own settings (like elasticsearch.yml)
+  config:
+    node.store.allow_mmap: false   # skips a Linux kernel setting (vm.max_map_count) that
+                                   # often blocks Elasticsearch on small dev clusters like minikube
+
+  # Customizes the Kubernetes Pod that runs each node
+  podTemplate:
+    spec:
+      containers:
+      - name: elasticsearch        # must be this name so ECK knows which container to customize
+
+        # Environment variables passed into the container
+        env:
+        - name: ES_JAVA_OPTS             # Elasticsearch runs on Java, so this sets the Java memory
+          value: "-Xms1g -Xmx1g"         # start and max heap at 1G 
+
+        # How much of the machine's resources this Pod may use
+        resources:
+          requests:                # the amount the scheduler reserves for it
+            memory: 2Gi            # reserve 2 GiB of memory
+            cpu: 500m              # reserve half a CPU core (500 millicores)
+          limits:                  # the hard ceiling
+            memory: 2Gi            # killed (OOMKilled) if it goes above 2 GiB
